@@ -1,0 +1,53 @@
+{
+  "proj": {
+    "Header": "📋 Registered Projects:",
+    "Empty": "  No projects registered. Use 'proj add <name>' to add one.",
+    "ErrNameReq": "❌ Error: Project name is required.",
+    "Saved": "✅ Project '{0}' saved.",
+    "Removed": "🗑️ Project '{0}' removed.",
+    "NotFound": "❌ Project '{0}' not found.",
+    "Launching": "🚀 Launching: {0}",
+    "MissingNodes": "⚠️ node_modules not found. Running npm install...",
+    "InstallFail": "❌ npm install failed.",
+    "Executing": "▶️ Running 'npm run {0}'...",
+    "NoScripts": "⚠️ No 'dev' or 'start' script found.",
+    "Available": "Available scripts: {0}",
+    "InvalidPkg": "❌ Invalid package.json",
+    "NoPkg": "ℹ️ No package.json found in this directory.",
+    "LangSet": "✅ Language set to English. Restart your terminal to apply.",
+    "LangErr": "❌ Usage: 'proj lang en' or 'proj lang ru'"
+  },
+  "corsproxy": {
+    "Title": "CORS Proxy",
+    "Portal": "🔌 Port: ",
+    "Records": "📝 Logging: ",
+    "Sealed": "OFF",
+    "Aspect": "📊 Output: ",
+    "Absolute": "ALL (every request)",
+    "Whisper": "ERRORS ONLY (status 400+)",
+    "Stopped": "⏹️ Proxy stopped.",
+    "Open": "OPEN",
+    "ErrPrefix": "❌ Error: "
+  },
+  "install": {
+    "Welcome": "\n🔧 FrontNox Installer",
+    "Select": "Select components to install:\n",
+    "Install": "Install {0} ({1})? (y/N)",
+    "NoTools": "❌ No components selected. Exiting.",
+    "Inst": "✅ Installed: {0}",
+    "Profile": "\n✅ PowerShell profile updated.",
+    "Done": "\nInstallation complete. Restart your terminal or run: . $PROFILE"
+  },
+  "uninstall": {
+    "Confirm": "Are you sure you want to uninstall FrontNox? (y/N)",
+    "Cleaning": "🧹 Removing FrontNox...",
+    "Profile": "✅ Profile entries removed.",
+    "Files": "✅ Scripts removed.",
+    "Config": "✅ Configuration removed.",
+    "KeepProjects": "📦 Keep saved project list? (y/N)",
+    "Logs": "✅ Proxy logs removed.",
+    "AccessError": "⚠️ Cannot write to profile:",
+    "Done": "✅ FrontNox has been uninstalled. Restart your terminal.",
+    "Aborted": "Uninstall cancelled."
+  }
+}
