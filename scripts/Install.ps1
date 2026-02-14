@@ -1,3 +1,7 @@
+param(
+  [switch]$All
+)
+
 # --- Fix Encoding for PowerShell 5.1 ---
 if ($PSVersionTable.PSVersion.Major -le 5)
 {
@@ -80,15 +84,21 @@ $Tools = @(
 )
 
 Write-Host $M.Welcome -ForegroundColor Cyan
-Write-Host $M.Select
-
-$ToInstall = @()
-
-foreach ($Tool in $Tools)
+if ($All)
 {
-  $Choice = Read-Host ($M.Install -f $Tool.Name, $Tool.Command)
-  if ($Choice -eq 'y')
-  { $ToInstall += $Tool
+  $ToInstall = $Tools
+  Write-Host $M.InstallAll -ForegroundColor Green
+} else
+{
+  Write-Host $M.Select
+  $ToInstall = @()
+
+  foreach ($Tool in $Tools)
+  {
+    $Choice = Read-Host ($M.Install -f $Tool.Name, $Tool.Command)
+    if ($Choice -eq 'y')
+    { $ToInstall += $Tool
+    }
   }
 }
 

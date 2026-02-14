@@ -80,6 +80,16 @@ function proj
     return $m
   }
 
+  function Test-ProjName($n)
+  {
+    if ($n -notmatch '^[a-zA-Z0-9_\.\-]{1,50}$')
+    {
+      Write-Host $(Get-Msg ErrBadName) -ForegroundColor Red
+      return $false
+    }
+    return $true
+  }
+
   if ($Version)
   {
     Write-Host "FrontNox v$NoxVersion"
@@ -132,6 +142,10 @@ function proj
         Write-Host $(Get-Msg ErrNameReq) -ForegroundColor Red
         return
       }
+      if (-not (Test-ProjName $Name))
+      {
+        return
+      }
       $Path = (Get-Location).Path
       if ($null -eq $ProjMap.psobject.Properties[$Name])
       {
@@ -169,6 +183,14 @@ function proj
         Write-Host $(Get-Msg ErrRenameArgs) -ForegroundColor Red
         return
       }
+      if (-not (Test-ProjName $Name))
+      {
+        return
+      }
+      if (-not (Test-ProjName $NewName))
+      {
+        return
+      }
       if ($null -eq $ProjMap.psobject.Properties[$Name])
       {
         Write-Host $(Get-Msg NotFound $Name) -ForegroundColor Red
@@ -188,11 +210,31 @@ function proj
 
     "run"
     {
-      $p = $ProjMap.$Name
+      if (-not $Name)
+      {
+        Write-Host $(Get-Msg ErrNameReq) -ForegroundColor Red
+        return
+      }
+
+      if ($Name -eq '.')
+      {
+        $p = (Get-Location).Path
+      } else
+      {
+        $p = $ProjMap.$Name
+      }
+
       if ($p -and (Test-Path $p))
       {
         Set-Location $p
-        Write-Host "`n$(Get-Msg Launching $p)" -ForegroundColor Cyan
+        $launchMsg = if ($Name -eq '.')
+        {
+          Get-Msg LaunchingCwd $p
+        } else
+        {
+          Get-Msg Launching $p
+        }
+        Write-Host "`n$launchMsg" -ForegroundColor Cyan
 
         if (Test-Path "package.json")
         {
@@ -261,6 +303,11 @@ function proj
 
     "go"
     {
+      if (-not $Name)
+      {
+        Write-Host $(Get-Msg ErrNameReq) -ForegroundColor Red
+        return
+      }
       $p = $ProjMap.$Name
       if ($p -and (Test-Path $p))
       {

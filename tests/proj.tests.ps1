@@ -77,6 +77,34 @@ Describe "proj" {
       $output = (proj add) *>&1 | Out-String
       $output | Should -Match "required|name"
     }
+
+    It "rejects invalid project name with spaces" {
+      Push-Location $TestDrive
+      try {
+        proj add "my project" *>&1 | Out-Null
+      } finally { Pop-Location }
+
+      $json = Get-Content $NoxProjFile -Raw | ConvertFrom-Json
+      $json.psobject.Properties.Name | Should -Not -Contain "my project"
+    }
+
+    It "rejects invalid project name with special chars" {
+      Push-Location $TestDrive
+      try {
+        proj add "../../etc" *>&1 | Out-Null
+      } finally { Pop-Location }
+
+      $json = Get-Content $NoxProjFile -Raw | ConvertFrom-Json
+      $json.psobject.Properties.Name | Should -Not -Contain "../../etc"
+    }
+
+    It "accepts valid project name with dots and dashes" {
+      Push-Location $TestDrive
+      try { proj add "my-app.v2" *>&1 | Out-Null } finally { Pop-Location }
+
+      $json = Get-Content $NoxProjFile -Raw | ConvertFrom-Json
+      $json.'my-app.v2' | Should -Be $TestDrive
+    }
   }
 
   Context "list" {
@@ -174,6 +202,35 @@ Describe "proj" {
     It "shows error for non-existent project" {
       $output = (proj go nowhere) *>&1 | Out-String
       $output | Should -Match "not found"
+    }
+
+    It "shows error when name is missing" {
+      $output = (proj go) *>&1 | Out-String
+      $output | Should -Match "required|name"
+    }
+  }
+
+  Context "run" {
+    It "shows error when name is missing" {
+      $output = (proj run) *>&1 | Out-String
+      $output | Should -Match "required|name"
+    }
+
+    It "runs current directory with dot argument" {
+      $projDir = Join-Path $TestDrive "dotproj"
+      New-Item -ItemType Directory -Force -Path $projDir | Out-Null
+
+      '{"scripts":{"dev":"echo ok"}}' | Set-Content (Join-Path $projDir "package.json") -Encoding UTF8
+      New-Item -ItemType Directory -Force -Path (Join-Path $projDir "node_modules") | Out-Null
+
+      $origDir = (Get-Location).Path
+      try {
+        Set-Location $projDir
+        $output = (proj run .) *>&1 | Out-String
+        $output | Should -Match "npm run dev|echo ok|ok"
+      } finally {
+        Set-Location $origDir
+      }
     }
   }
 
