@@ -58,7 +58,7 @@ function proj
 
   # --- Load messages once per invocation ---
   $Lang = if (Test-Path $NoxLangFile)
-  { (Get-Content $NoxLangFile -Raw).Trim()
+  { (Get-Content $NoxLangFile -Raw -Encoding UTF8).Trim()
   } else
   { "en"
   }
