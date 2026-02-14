@@ -3,11 +3,25 @@ BeforeAll {
   . (Join-Path $RepoRoot "src\constants.ps1")
   . (Join-Path $RepoRoot "src\proj.ps1")
 
-  # Override Nox paths for testing (same scope where constants.ps1 set them)
-  $NoxConfigDir = Join-Path $TestDrive "FrontNox"
-  $NoxProjFile = Join-Path $NoxConfigDir "proj.json"
-  $NoxLangFile = Join-Path $NoxConfigDir "lang.conf"
-  $NoxI18nDir = Join-Path $RepoRoot "src\i18n"
+  # Save original paths and override with test-isolated paths (script scope
+  # ensures the proj function sees these overrides via dynamic scoping)
+  $script:OrigNoxConfigDir = $NoxConfigDir
+  $script:OrigNoxProjFile  = $NoxProjFile
+  $script:OrigNoxLangFile  = $NoxLangFile
+  $script:OrigNoxI18nDir   = $NoxI18nDir
+
+  $script:NoxConfigDir = Join-Path $TestDrive "FrontNox"
+  $script:NoxProjFile  = Join-Path $script:NoxConfigDir "proj.json"
+  $script:NoxLangFile  = Join-Path $script:NoxConfigDir "lang.conf"
+  $script:NoxI18nDir   = Join-Path $RepoRoot "src\i18n"
+}
+
+AfterAll {
+  # Restore original paths so the real config is never polluted
+  $script:NoxConfigDir = $script:OrigNoxConfigDir
+  $script:NoxProjFile  = $script:OrigNoxProjFile
+  $script:NoxLangFile  = $script:OrigNoxLangFile
+  $script:NoxI18nDir   = $script:OrigNoxI18nDir
 }
 
 Describe "proj" {
