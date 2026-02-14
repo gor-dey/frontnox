@@ -20,9 +20,9 @@ A lightweight toolkit for frontend developers. Pure PowerShell, zero dependencie
 **Double-click** `Install.cmd` — or run manually:
 
 ```powershell
-pwsh .\Install.ps1
+pwsh .\scripts\Install.ps1
 # or
-powershell .\Install.ps1
+powershell .\scripts\Install.ps1
 ```
 
 The installer will:
@@ -39,7 +39,7 @@ After installation, **restart your terminal**.
 **Double-click** `Uninstall.cmd` — or:
 
 ```powershell
-pwsh .\Uninstall.ps1
+pwsh .\scripts\Uninstall.ps1
 ```
 
 ---
@@ -151,9 +151,10 @@ Clickable file links are shown in the terminal for quick access.
 ```
 frontnox/
 ├── Install.cmd          # Launcher (double-click to install)
-├── Install.ps1          # Installer script
 ├── Uninstall.cmd        # Launcher (double-click to uninstall)
-├── Uninstall.ps1        # Uninstaller script
+├── scripts/
+│   ├── Install.ps1      # Installer script
+│   └── Uninstall.ps1    # Uninstaller script
 └── src/
     ├── constants.ps1    # Shared paths & config
     ├── proj.ps1         # Project manager

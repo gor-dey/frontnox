@@ -20,9 +20,9 @@
 **Двойной клик** по `Install.cmd` — или вручную:
 
 ```powershell
-pwsh .\Install.ps1
+pwsh .\scripts\Install.ps1
 # или
-powershell .\Install.ps1
+powershell .\scripts\Install.ps1
 ```
 
 Установщик:
@@ -39,7 +39,7 @@ powershell .\Install.ps1
 **Двойной клик** по `Uninstall.cmd` — или:
 
 ```powershell
-pwsh .\Uninstall.ps1
+pwsh .\scripts\Uninstall.ps1
 ```
 
 ---
@@ -151,9 +151,10 @@ GET http://localhost:8080/https://api.example.com/data
 ```
 frontnox/
 ├── Install.cmd          # Лаунчер (двойной клик для установки)
-├── Install.ps1          # Скрипт установки
 ├── Uninstall.cmd        # Лаунчер (двойной клик для удаления)
-├── Uninstall.ps1        # Скрипт удаления
+├── scripts/
+│   ├── Install.ps1      # Скрипт установки
+│   └── Uninstall.ps1    # Скрипт удаления
 └── src/
     ├── constants.ps1    # Общие пути и конфигурация
     ├── proj.ps1         # Менеджер проектов
