@@ -8,8 +8,9 @@ if ($PSVersionTable.PSVersion.Major -le 5)
 
 # --- Language Selection ---
 # Load Constants first (try local then installed)
-$ConstPath = if (Test-Path (Join-Path $PSScriptRoot "src\constants.ps1"))
-{ Join-Path $PSScriptRoot "src\constants.ps1"
+$RepoRoot = Split-Path $PSScriptRoot -Parent
+$ConstPath = if (Test-Path (Join-Path $RepoRoot "src\constants.ps1"))
+{ Join-Path $RepoRoot "src\constants.ps1"
 } else
 { Join-Path $HOME ".config\FrontNox\bin\constants.ps1"
 }
@@ -25,8 +26,8 @@ $Lang = if (Test-Path $NoxLangFile)
 }
 
 # Try to find i18n resources
-$I18nDir = if (Test-Path (Join-Path $PSScriptRoot "src\i18n"))
-{ Join-Path $PSScriptRoot "src\i18n"
+$I18nDir = if (Test-Path (Join-Path $RepoRoot "src\i18n"))
+{ Join-Path $RepoRoot "src\i18n"
 } else
 { $NoxI18nDir
 }

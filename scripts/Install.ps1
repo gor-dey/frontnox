@@ -1,4 +1,4 @@
-﻿# --- Fix Encoding for PowerShell 5.1 ---
+# --- Fix Encoding for PowerShell 5.1 ---
 if ($PSVersionTable.PSVersion.Major -le 5)
 {
   $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -64,10 +64,13 @@ function Select-WithTab
 
 $Lang = Select-WithTab -Prompt "Select language / Выберите язык:" -Options @("en", "ru") -Default 0
 
-# Load Constants
-. (Join-Path $PSScriptRoot "src\constants.ps1")
+# Determine repository root (script lives in <repo>/scripts)
+$RepoRoot = Split-Path $PSScriptRoot -Parent
 
-$I18nPath = Join-Path $PSScriptRoot "src\i18n\$Lang.json"
+# Load Constants
+. (Join-Path $RepoRoot "src\constants.ps1")
+
+$I18nPath = Join-Path $RepoRoot "src\i18n\$Lang.json"
 $M = (Get-Content $I18nPath -Raw -Encoding UTF8 | ConvertFrom-Json).install
 
 # --- Configuration ---
@@ -101,8 +104,8 @@ if (-not (Test-Path $NoxBinDir))
 }
 
 # Copy Constants & i18n
-Copy-Item (Join-Path $PSScriptRoot "src\constants.ps1") -Destination $NoxBinDir -Force
-$I18nSource = Join-Path $PSScriptRoot "src\i18n"
+Copy-Item (Join-Path $RepoRoot "src\constants.ps1") -Destination $NoxBinDir -Force
+$I18nSource = Join-Path $RepoRoot "src\i18n"
 if (Test-Path $I18nSource)
 {
   Copy-Item $I18nSource -Destination $NoxBinDir -Recurse -Force
@@ -124,7 +127,7 @@ $AllProfiles = @(
 $LinesToAdd = @("`n# --- FrontNox ---")
 foreach ($Tool in $ToInstall)
 {
-  $Source = Join-Path $PSScriptRoot "src\$($Tool.File)"
+  $Source = Join-Path $RepoRoot "src\$($Tool.File)"
   $Dest = Join-Path $NoxBinDir $Tool.File
   Copy-Item $Source -Destination $Dest -Force
   $LinesToAdd += ". '$Dest'"
