@@ -83,8 +83,9 @@ proj go myapp
 
 Navigate to the project and launch it:
 
-- Runs `npm install` if `node_modules/` is missing
-- Runs `npm run dev` (or `npm run start` as fallback)
+- Auto-detects package manager (`npm`, `yarn`, `pnpm`, `bun`) by lock file
+- Runs install if `node_modules/` is missing
+- Runs `dev` script (or `start` as fallback)
 
 ```powershell
 proj run myapp
@@ -100,6 +101,19 @@ Remove a project from the list (does not delete files).
 proj remove myapp
 # 🗑️ Project 'myapp' removed.
 ```
+
+#### `proj rename <old-name> <new-name>`
+
+Rename a project.
+
+```powershell
+proj rename myapp frontend
+# ✅ Project 'myapp' renamed to 'frontend'.
+```
+
+#### `proj -Version` / `corsproxy -Version`
+
+Show the installed version.
 
 > **Tip:** All project names support <kbd>Tab</kbd> completion.
 

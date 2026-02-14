@@ -7,15 +7,18 @@
     "Removed": "🗑️ Project '{0}' removed.",
     "NotFound": "❌ Project '{0}' not found.",
     "Launching": "🚀 Launching: {0}",
-    "MissingNodes": "⚠️ node_modules not found. Running npm install...",
-    "InstallFail": "❌ npm install failed.",
-    "Executing": "▶️ Running 'npm run {0}'...",
+    "MissingNodes": "⚠️ node_modules not found. Running {0} install...",
+    "InstallFail": "❌ {0} install failed.",
+    "Executing": "▶️ Running '{0} run {1}'...",
     "NoScripts": "⚠️ No 'dev' or 'start' script found.",
     "Available": "Available scripts: {0}",
     "InvalidPkg": "❌ Invalid package.json",
     "NoPkg": "ℹ️ No package.json found in this directory.",
-    "LangSet": "✅ Language set to English. Restart your terminal to apply.",
-    "LangErr": "❌ Usage: 'proj lang en' or 'proj lang ru'"
+    "Renamed": "✅ Project '{0}' renamed to '{1}'.",
+    "ErrRenameArgs": "❌ Error: Usage: proj rename <old-name> <new-name>",
+    "ErrRenameExists": "❌ Project '{0}' already exists.",
+    "DetectedPM": "📦 Detected: {0}",
+    "Usage": "Usage: proj <list|add|remove|rename|run|go> [-Version]"
   },
   "corsproxy": {
     "Title": "CORS Proxy",

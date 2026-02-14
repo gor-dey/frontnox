@@ -1,4 +1,5 @@
 # --- FrontNox Constants ---
+$NoxVersion     = "1.0.0"
 $NoxBaseDir     = Join-Path $HOME ".config\FrontNox"
 $NoxBinDir      = Join-Path $NoxBaseDir "bin"
 $NoxConfigDir   = $NoxBaseDir

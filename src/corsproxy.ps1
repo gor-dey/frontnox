@@ -4,7 +4,8 @@ function corsproxy
     [int]$Port = 8080,
     [string]$LogDir = $null,
     [switch]$NoLog,
-    [switch]$ShowAll
+    [switch]$ShowAll,
+    [switch]$Version
   )
 
   # --- Fix Encoding for PowerShell 5.1 ---
@@ -18,6 +19,12 @@ function corsproxy
 
   $CurrentScriptRoot = $PSScriptRoot
   . (Join-Path $CurrentScriptRoot "constants.ps1")
+
+  if ($Version)
+  {
+    Write-Host "FrontNox CORS Proxy v$NoxVersion"
+    return
+  }
 
   if (-not $LogDir)
   { $LogDir = $NoxProxyLogDir
@@ -207,6 +214,26 @@ function corsproxy
         { $response.ContentType = $targetResponse.Content.Headers.ContentType.ToString()
         }
 
+        # Forward meaningful response headers
+        $skipRespHeaders = @(
+          "Transfer-Encoding", "Content-Length", "Content-Encoding",
+          "Connection", "Keep-Alive"
+        )
+        foreach ($header in $targetResponse.Headers)
+        {
+          if ($header.Key -notin $skipRespHeaders)
+          {
+            try { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) } catch {}
+          }
+        }
+        foreach ($header in $targetResponse.Content.Headers)
+        {
+          if ($header.Key -notin $skipRespHeaders -and $header.Key -ne "Content-Type")
+          {
+            try { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) } catch {}
+          }
+        }
+
         $respBytes = $targetResponse.Content.ReadAsByteArrayAsync().Result
         $response.ContentLength64 = $respBytes.Length
         $response.OutputStream.Write($respBytes, 0, $respBytes.Length)
@@ -214,6 +241,18 @@ function corsproxy
         if ($logData)
         {
           $logData.ResponseStatus = "$responseCode ($($targetResponse.ReasonPhrase))"
+          foreach ($header in $targetResponse.Headers)
+          {
+            if ($header.Key -notin $skipRespHeaders)
+            { $logData.ResponseHeaders[$header.Key] = [string]::Join(", ", $header.Value)
+            }
+          }
+          foreach ($header in $targetResponse.Content.Headers)
+          {
+            if ($header.Key -notin $skipRespHeaders)
+            { $logData.ResponseHeaders[$header.Key] = [string]::Join(", ", $header.Value)
+            }
+          }
           $respStr = [System.Text.Encoding]::UTF8.GetString($respBytes)
           $logData.ResponseBody = try
           { $respStr | ConvertFrom-Json
