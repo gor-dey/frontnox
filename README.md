@@ -17,7 +17,17 @@ A lightweight toolkit for frontend developers. Pure PowerShell, zero dependencie
 
 ## Installation
 
-**Double-click** `Install.cmd` — or run manually:
+### via winget *(recommended)*
+
+```
+winget install gor-dey.FrontNox
+```
+
+> Installs all tools silently in English. Restart your terminal afterwards.
+
+### Manual
+
+**Double-click** `Install.cmd` — or run from PowerShell:
 
 ```powershell
 pwsh .\scripts\Install.ps1
@@ -25,10 +35,22 @@ pwsh .\scripts\Install.ps1
 powershell .\scripts\Install.ps1
 ```
 
+Silent / non-interactive flags:
+
+| Flag | Description |
+|------|-------------|
+| `-All` | Install all tools without prompting |
+| `-Lang en` | Skip language selection (use `en` or `ru`) |
+
+```powershell
+# Install everything silently in English
+pwsh .\scripts\Install.ps1 -All -Lang en
+```
+
 The installer will:
 
-1. Ask for a language (`en` / `ru` — switch with <kbd>Tab</kbd>)
-2. Let you choose which tools to install
+1. Ask for a language (`en` / `ru` — switch with <kbd>Tab</kbd>) — skipped when `-Lang` is set
+2. Let you choose which tools to install — skipped when `-All` is set
 3. Copy scripts to `~/.config/FrontNox/bin/`
 4. Update your PowerShell profile
 

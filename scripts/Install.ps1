@@ -1,5 +1,7 @@
 param(
-  [switch]$All
+  [switch]$All,
+  [ValidateSet("en", "ru")]
+  [string]$Lang = ""
 )
 
 # --- Fix Encoding for PowerShell 5.1 ---
@@ -66,7 +68,10 @@ function Select-WithTab
   }
 }
 
-$Lang = Select-WithTab -Prompt "Select language / Выберите язык:" -Options @("en", "ru") -Default 0
+if ($Lang -eq "")
+{
+  $Lang = Select-WithTab -Prompt "Select language / Выберите язык:" -Options @("en", "ru") -Default 0
+}
 
 # Determine repository root (script lives in <repo>/scripts)
 $RepoRoot = Split-Path $PSScriptRoot -Parent
