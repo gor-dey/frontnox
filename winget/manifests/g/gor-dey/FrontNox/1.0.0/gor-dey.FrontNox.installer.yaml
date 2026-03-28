@@ -15,21 +15,21 @@ NestedInstallerFiles:
 Installers:
   - Architecture: x64
     InstallerUrl: https://github.com/gor-dey/frontnox/releases/download/v1.0.0/FrontNox-1.0.0.zip
-    InstallerSha256: PLACEHOLDER_SHA256_UPDATE_BEFORE_SUBMISSION
+    InstallerSha256: 0A3E301FD315A6391EC308DE29D82EF0CA0F8764B7B6396FE34892C17D751F29
     InstallerSwitches:
       Silent: /S
       SilentWithProgress: /S
     ProductCode: FrontNox
   - Architecture: x86
     InstallerUrl: https://github.com/gor-dey/frontnox/releases/download/v1.0.0/FrontNox-1.0.0.zip
-    InstallerSha256: PLACEHOLDER_SHA256_UPDATE_BEFORE_SUBMISSION
+    InstallerSha256: 0A3E301FD315A6391EC308DE29D82EF0CA0F8764B7B6396FE34892C17D751F29
     InstallerSwitches:
       Silent: /S
       SilentWithProgress: /S
     ProductCode: FrontNox
   - Architecture: arm64
     InstallerUrl: https://github.com/gor-dey/frontnox/releases/download/v1.0.0/FrontNox-1.0.0.zip
-    InstallerSha256: PLACEHOLDER_SHA256_UPDATE_BEFORE_SUBMISSION
+    InstallerSha256: 0A3E301FD315A6391EC308DE29D82EF0CA0F8764B7B6396FE34892C17D751F29
     InstallerSwitches:
       Silent: /S
       SilentWithProgress: /S
