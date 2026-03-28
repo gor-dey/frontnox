@@ -26,6 +26,18 @@ jobs:
           cd dist
           zip -r "FrontNox-${{ steps.version.outputs.VERSION }}.zip" FrontNox/
 
+      - name: Publish to PSGallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if (-not $env:PSGALLERY_API_KEY) { Write-Host "Skipping PSGallery: PSGALLERY_API_KEY not set"; exit 0 }
+          $moduleDir = "dist/PSModule/FrontNox"
+          New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
+          Copy-Item -Path "dist/FrontNox/src/*" -Destination $moduleDir -Recurse
+          Update-ModuleManifest -Path "$moduleDir/FrontNox.psd1" -ModuleVersion "${{ steps.version.outputs.VERSION }}"
+          Publish-Module -Path $moduleDir -NuGetApiKey $env:PSGALLERY_API_KEY -Repository PSGallery
+
       - name: Compute SHA256
         id: sha
         run: |
@@ -38,6 +50,11 @@ jobs:
           name: "FrontNox v${{ steps.version.outputs.VERSION }}"
           body: |
             ## FrontNox v${{ steps.version.outputs.VERSION }}
+
+            ### Install via PSGallery
+            ```powershell
+            Install-Module FrontNox
+            ```
 
             ### Install via winget
             ```
