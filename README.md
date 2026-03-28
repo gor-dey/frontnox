@@ -17,13 +17,19 @@ A lightweight toolkit for frontend developers. Pure PowerShell, zero dependencie
 
 ## Installation
 
-### via winget *(recommended)*
+### via PSGallery *(recommended)*
+
+```powershell
+Install-Module FrontNox
+```
+
+> Installs all tools. Restart your terminal afterwards.
+
+### via winget *(pending moderation)*
 
 ```
 winget install gor-dey.FrontNox
 ```
-
-> Installs all tools silently in English. Restart your terminal afterwards.
 
 ### Manual
 
