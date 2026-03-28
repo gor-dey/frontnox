@@ -220,4 +220,4 @@ After installation, scripts are stored in:
 
 ## License
 
-MIT
+Apache-2.0

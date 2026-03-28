@@ -13,4 +13,4 @@ if %errorlevel% equ 0 (
     powershell -ExecutionPolicy Bypass -File "%~dp0scripts\Install.ps1" %SILENT_FLAGS%
 )
 
-endlocal
+endlocal & exit /b %errorlevel%

@@ -1,3 +1,12 @@
+# Copyright 2026 gor-dey
+# Licensed under the Apache License, Version 2.0 (the "License")
+# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the License is "AS IS" BASIS.
+
+param(
+  [switch]$Silent
+)
+
 # --- Fix Encoding for PowerShell 5.1 ---
 if ($PSVersionTable.PSVersion.Major -le 5)
 {
@@ -39,11 +48,14 @@ if (-not (Test-Path $I18nPath))
 
 $M = (Get-Content $I18nPath -Raw -Encoding UTF8 | ConvertFrom-Json).uninstall
 
-$Choice = Read-Host $M.Confirm
-if ($Choice -ne 'y')
+if (-not $Silent)
 {
-  Write-Host $M.Aborted -ForegroundColor Yellow
-  return
+  $Choice = Read-Host $M.Confirm
+  if ($Choice -ne 'y')
+  {
+    Write-Host $M.Aborted -ForegroundColor Yellow
+    return
+  }
 }
 
 Write-Host "`n$($M.Cleaning)" -ForegroundColor Cyan
@@ -118,7 +130,7 @@ if (Test-Path $NoxProxyLogDir)
 # --- Delete Config ---
 if (Test-Path $NoxConfigDir)
 {
-  $Keep = Read-Host $M.KeepProjects
+  $Keep = if ($Silent) { "n" } else { Read-Host $M.KeepProjects }
   if ($Keep -eq 'y')
   {
     # Only remove language config, keep proj.json
@@ -131,6 +143,12 @@ if (Test-Path $NoxConfigDir)
     Remove-Item $NoxConfigDir -Recurse -Force
     Write-Host $M.Config -ForegroundColor Green
   }
+}
+
+# --- Remove registry entry ---
+$RegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\FrontNox"
+if (Test-Path $RegPath)
+{ Remove-Item $RegPath -Force
 }
 
 Write-Host "`n$($M.Done)" -ForegroundColor Gray

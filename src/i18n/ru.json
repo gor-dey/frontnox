@@ -32,7 +32,9 @@
     "Whisper": "ТОЛЬКО ОШИБКИ (400+)",
     "Stopped": "⏹️ Прокси остановлен.",
     "Open": "ОТКРЫТЬ",
-    "ErrPrefix": "❌ Ошибка: "
+    "ErrPrefix": "❌ Ошибка: ",
+    "Hints": "  ⌨️  Ctrl+L Очистить | Ctrl+C Стоп",
+    "Cleared": "🧹 Экран очищен."
   },
   "install": {
     "Welcome": "\n🔧 Установка FrontNox",

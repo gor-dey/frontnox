@@ -1,3 +1,8 @@
+# Copyright 2026 gor-dey
+# Licensed under the Apache License, Version 2.0 (the "License")
+# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the License is "AS IS" BASIS.
+
 function corsproxy
 {
   param (
@@ -54,29 +59,35 @@ function corsproxy
     New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
   }
 
-  $Host.UI.RawUI.WindowTitle = "CORS Proxy :$Port"
-  Clear-Host
-  Write-Host "==========================================" -ForegroundColor Cyan
-  Write-Host ("            " + (Get-Msg Title)) -ForegroundColor White
-  Write-Host "==========================================" -ForegroundColor Cyan
+  function Draw-Header
+  {
+    Clear-Host
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host ("            " + (Get-Msg Title)) -ForegroundColor White
+    Write-Host "==========================================" -ForegroundColor Cyan
 
-  Write-Host (" " + (Get-Msg Portal)) -NoNewline -ForegroundColor DarkGray
-  Write-Host "$Port" -ForegroundColor Cyan
+    Write-Host (" " + (Get-Msg Portal)) -NoNewline -ForegroundColor DarkGray
+    Write-Host "$Port" -ForegroundColor Cyan
 
-  if ($NoLog)
-  {
-    Write-Host (" " + (Get-Msg Records)) -NoNewline -ForegroundColor DarkGray
-    Write-Host (Get-Msg Sealed) -ForegroundColor Red
-  } elseif ($ShowAll)
-  {
-    Write-Host (" " + (Get-Msg Aspect)) -NoNewline -ForegroundColor DarkGray
-    Write-Host (Get-Msg Absolute) -ForegroundColor Green
-  } else
-  {
-    Write-Host (" " + (Get-Msg Aspect)) -NoNewline -ForegroundColor DarkGray
-    Write-Host (Get-Msg Whisper) -ForegroundColor Yellow
+    if ($NoLog)
+    {
+      Write-Host (" " + (Get-Msg Records)) -NoNewline -ForegroundColor DarkGray
+      Write-Host (Get-Msg Sealed) -ForegroundColor Red
+    } elseif ($ShowAll)
+    {
+      Write-Host (" " + (Get-Msg Aspect)) -NoNewline -ForegroundColor DarkGray
+      Write-Host (Get-Msg Absolute) -ForegroundColor Green
+    } else
+    {
+      Write-Host (" " + (Get-Msg Aspect)) -NoNewline -ForegroundColor DarkGray
+      Write-Host (Get-Msg Whisper) -ForegroundColor Yellow
+    }
+    Write-Host (Get-Msg Hints) -ForegroundColor DarkGray
+    Write-Host "------------------------------------------" -ForegroundColor Gray
   }
-  Write-Host "------------------------------------------" -ForegroundColor Gray
+
+  $Host.UI.RawUI.WindowTitle = "CORS Proxy :$Port"
+  Draw-Header
 
   $prefix = "http://localhost:$Port/"
   $listener = New-Object System.Net.HttpListener
@@ -99,6 +110,18 @@ function corsproxy
       if ($null -eq $contextTask)
       { $contextTask = $listener.GetContextAsync()
       }
+      # --- Hotkey handling ---
+      while ([Console]::KeyAvailable)
+      {
+        $key = [Console]::ReadKey($true)
+        if (($key.Modifiers -band [ConsoleModifiers]::Control) -and $key.Key -eq 'L')
+        {
+          $reqId = 0
+          Draw-Header
+          Write-Host (Get-Msg Cleared) -ForegroundColor Green
+        }
+      }
+
       if (-not $contextTask.AsyncWaitHandle.WaitOne(300))
       { continue
       }
@@ -223,14 +246,22 @@ function corsproxy
         {
           if ($header.Key -notin $skipRespHeaders)
           {
-            try { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) } catch {}
+            try
+            { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) 
+            } catch
+            {
+            }
           }
         }
         foreach ($header in $targetResponse.Content.Headers)
         {
           if ($header.Key -notin $skipRespHeaders -and $header.Key -ne "Content-Type")
           {
-            try { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) } catch {}
+            try
+            { $response.AddHeader($header.Key, [string]::Join(", ", $header.Value)) 
+            } catch
+            {
+            }
           }
         }
 

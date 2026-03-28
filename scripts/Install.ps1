@@ -1,3 +1,8 @@
+# Copyright 2026 gor-dey
+# Licensed under the Apache License, Version 2.0 (the "License")
+# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the License is "AS IS" BASIS.
+
 param(
   [switch]$All,
   [ValidateSet("en", "ru")]
@@ -149,6 +154,12 @@ foreach ($Tool in $ToInstall)
   Write-Host ($M.Inst -f $Tool.Name) -ForegroundColor Green
 }
 
+# Copy Uninstall script so winget uninstall works after temp dir is gone
+$UninstallSource = Join-Path $RepoRoot "scripts\Uninstall.ps1"
+if (Test-Path $UninstallSource)
+{ Copy-Item $UninstallSource -Destination (Join-Path $NoxBinDir "Uninstall.ps1") -Force
+}
+
 foreach ($Path in $AllProfiles)
 {
   if (Test-Path $Path)
@@ -195,3 +206,18 @@ foreach ($Path in $AllProfiles)
 }
 
 Write-Host $M.Done -ForegroundColor Gray
+
+# --- Register in Windows for winget uninstall ---
+$RegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\FrontNox"
+$UninstallScript = Join-Path $NoxBinDir "Uninstall.ps1"
+$PwshExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
+
+New-Item -Path $RegPath -Force | Out-Null
+Set-ItemProperty -Path $RegPath -Name "DisplayName"     -Value "FrontNox"
+Set-ItemProperty -Path $RegPath -Name "DisplayVersion"  -Value $NoxVersion
+Set-ItemProperty -Path $RegPath -Name "Publisher"        -Value "gor-dey"
+Set-ItemProperty -Path $RegPath -Name "InstallLocation"  -Value $NoxBaseDir
+Set-ItemProperty -Path $RegPath -Name "UninstallString"  -Value "$PwshExe -ExecutionPolicy Bypass -File `"$UninstallScript`""
+Set-ItemProperty -Path $RegPath -Name "QuietUninstallString" -Value "$PwshExe -ExecutionPolicy Bypass -File `"$UninstallScript`" -Silent"
+Set-ItemProperty -Path $RegPath -Name "NoModify"         -Value 1 -Type DWord
+Set-ItemProperty -Path $RegPath -Name "NoRepair"         -Value 1 -Type DWord

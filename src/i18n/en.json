@@ -32,7 +32,9 @@
     "Whisper": "ERRORS ONLY (status 400+)",
     "Stopped": "⏹️ Proxy stopped.",
     "Open": "OPEN",
-    "ErrPrefix": "❌ Error: "
+    "ErrPrefix": "❌ Error: ",
+    "Hints": "⌨️  Ctrl+L Clear | Ctrl+C Stop",
+    "Cleared": "🧹 Screen cleared."
   },
   "install": {
     "Welcome": "\n🔧 FrontNox Installer",

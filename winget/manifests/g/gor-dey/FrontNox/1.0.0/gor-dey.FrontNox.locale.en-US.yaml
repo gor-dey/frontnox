@@ -7,9 +7,9 @@ PublisherUrl: https://github.com/gor-dey
 PublisherSupportUrl: https://github.com/gor-dey/frontnox/issues
 PackageName: FrontNox
 PackageUrl: https://github.com/gor-dey/frontnox
-License: MIT
+License: Apache-2.0
 LicenseUrl: https://github.com/gor-dey/frontnox/blob/main/LICENSE
-Copyright: Copyright (c) gor-dey
+Copyright: Copyright 2026 gor-dey
 ShortDescription: A lightweight PowerShell toolkit for frontend developers — project manager and local CORS proxy.
 Description: |-
   FrontNox is a pure-PowerShell toolkit for frontend developers with zero external dependencies.
