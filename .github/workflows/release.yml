@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release zip
+        run: |
+          mkdir -p dist/FrontNox
+          cp -r src scripts Install.cmd Uninstall.cmd dist/FrontNox/
+          cd dist
+          zip -r "FrontNox-${{ steps.version.outputs.VERSION }}.zip" FrontNox/
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          HASH=$(sha256sum "dist/FrontNox-${{ steps.version.outputs.VERSION }}.zip" | awk '{print $1}' | tr '[:lower:]' '[:upper:]')
+          echo "SHA256=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "FrontNox v${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## FrontNox v${{ steps.version.outputs.VERSION }}
+
+            ### Install via winget
+            ```
+            winget install gor-dey.FrontNox
+            ```
+
+            ### Manual install
+            Download `FrontNox-${{ steps.version.outputs.VERSION }}.zip`, extract it, and run `Install.cmd`.
+
+            **SHA256:** `${{ steps.sha.outputs.SHA256 }}`
+          files: "dist/FrontNox-${{ steps.version.outputs.VERSION }}.zip"
+          draft: false
+          prerelease: false
