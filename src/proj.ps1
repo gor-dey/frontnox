@@ -58,6 +58,8 @@ function proj
     [Parameter(Position = 2)]
     [string]$NewName,
 
+    [switch]$NoTui,
+
     [switch]$Version
   )
 
@@ -73,9 +75,12 @@ function proj
   }
   $Messages = Get-Content $I18nPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
-  function Get-Msg($Key, $Arg1, $Arg2)
+  function Get-Msg($Key, $Arg1, $Arg2, $Arg3)
   {
     $m = $Messages.proj.$Key
+    if ($Arg3)
+    { return $m -f $Arg1, $Arg2, $Arg3
+    }
     if ($Arg2)
     { return $m -f $Arg1, $Arg2
     }
@@ -241,6 +246,22 @@ function proj
         }
         Write-Host "`n$launchMsg" -ForegroundColor Cyan
 
+        # Project title for the banner and the console tab
+        $projTitle = if ($Name -eq '.')
+        {
+          Split-Path $p -Leaf
+        } else
+        {
+          $Name
+        }
+        try
+        {
+          $Host.UI.RawUI.WindowTitle = $projTitle
+        } catch
+        {
+          # No console window (CI, ISE) — the title is cosmetic, skip it
+        }
+
         if (Test-Path "package.json")
         {
           # Detect package manager by lock file
@@ -285,8 +306,89 @@ function proj
 
             if ($cmd)
             {
-              Write-Host $(Get-Msg Executing $pm $cmd) -ForegroundColor Gray
-              & $pm run $cmd
+              # Pinned-header TUI on VT-capable terminals; plain stream otherwise
+              $rows = 0
+              try
+              {
+                $rows = $Host.UI.RawUI.WindowSize.Height
+              } catch
+              {
+                # No console window — plain mode
+              }
+              $useTui = -not $NoTui -and $Host.UI.SupportsVirtualTerminal -and $rows -gt 6
+
+              $esc = [char]27
+              if ($useTui)
+              {
+                $cols = $Host.UI.RawUI.WindowSize.Width
+                $headerTitle = Get-Msg TuiTitle $projTitle
+                $drawHeader = {
+                  param($status)
+                  $max = $cols - $headerTitle.Length - 5
+                  if ($max -gt 0 -and $status.Length -gt $max)
+                  {
+                    $status = $status.Substring(0, $max)
+                  }
+                  [Console]::Write("${esc}7${esc}[1;1H${esc}[2K${esc}[96m$headerTitle${esc}[90m  |  ${esc}[93m$status${esc}[0m${esc}8")
+                }
+
+                Clear-Host
+                # Reserve the two top rows for the header, scroll logs below them
+                [Console]::Write("${esc}[3;${rows}r")
+                & $drawHeader (Get-Msg TuiStarting)
+                $sub = "$p  |  $pm run $cmd"
+                if ($sub.Length -gt $cols)
+                {
+                  $sub = $sub.Substring(0, $cols)
+                }
+                [Console]::Write("${esc}[2;1H${esc}[2K${esc}[2m$($sub.PadRight($cols))${esc}[0m")
+                [Console]::Write("${esc}[3;1H")
+              } else
+              {
+                Write-Host (Get-Msg Banner $projTitle $p "$pm run $cmd") -ForegroundColor Cyan
+              }
+
+              # Stream the dev-server output, watching for the bound URL
+              # to report the actual port and pin it to the header / tab title
+              $script:FrontNoxLastPort = $null
+              try
+              {
+                & $pm run $cmd 2>&1 | ForEach-Object {
+                  $line = "$_"
+                  Write-Host $line
+                  # Strip ANSI escapes: colored output (e.g. Vite on a PTY)
+                  # can split the URL with SGR codes and break the match
+                  $clean = $line -replace "${esc}\[[0-9;?]*[A-Za-z]", ''
+                  if ($clean -match '(https?://(?:localhost|127\.0\.0\.1|\[::1\]):(\d+))')
+                  {
+                    $url = $Matches[1]
+                    $port = $Matches[2]
+                    if ($port -ne $script:FrontNoxLastPort)
+                    {
+                      $script:FrontNoxLastPort = $port
+                      if ($useTui)
+                      {
+                        & $drawHeader $url
+                      }
+                      try
+                      {
+                        $Host.UI.RawUI.WindowTitle = "$projTitle :$port"
+                      } catch
+                      {
+                        # No console window (CI, ISE) — the title is cosmetic, skip it
+                      }
+                      Write-Host (Get-Msg Live $projTitle $url) -ForegroundColor Green
+                    }
+                  }
+                }
+              } finally
+              {
+                if ($useTui)
+                {
+                  # Give the whole window back to normal scrolling
+                  [Console]::Write("${esc}[r")
+                }
+              }
             } else
             {
               Write-Host $(Get-Msg NoScripts) -ForegroundColor Yellow

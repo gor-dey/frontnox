@@ -114,11 +114,18 @@ Navigate to the project and launch it:
 - Auto-detects package manager (`npm`, `yarn`, `pnpm`, `bun`) by lock file
 - Runs install if `node_modules/` is missing
 - Runs `dev` script (or `start` as fallback)
+- On VT-capable terminals shows a pinned TUI header (`project · URL`) with logs scrolling below; other hosts fall back to a launch banner
+- Detects the dev-server URL in the output and pins the console tab title to `name :port`
+- `-NoTui` forces the plain banner mode
 
 ```powershell
 proj run myapp
 # 🚀 Launching: C:\Users\me\projects\myapp
-# ▶️ Running 'npm run dev'...
+# ╭─ 🚀 myapp
+# │  📁 C:\Users\me\projects\myapp
+# │  ▶️ npm run dev
+# ╰─
+# 🌐 myapp is live at http://localhost:5173/
 ```
 
 #### `proj remove <name>`

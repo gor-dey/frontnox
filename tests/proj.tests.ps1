@@ -3,17 +3,19 @@ BeforeAll {
   . (Join-Path $RepoRoot "src\constants.ps1")
   . (Join-Path $RepoRoot "src\proj.ps1")
 
-  # Save original paths and override with test-isolated paths (script scope
-  # ensures the proj function sees these overrides via dynamic scoping)
+  # Save original paths and override with test-isolated paths.
+  # NOTE: plain assignment is required here — the dot-sourced constants.ps1
+  # has already created same-named variables in this scope, and `$script:`
+  # would write shadowed copies to the parent scope that It blocks never see.
   $script:OrigNoxConfigDir = $NoxConfigDir
   $script:OrigNoxProjFile  = $NoxProjFile
   $script:OrigNoxLangFile  = $NoxLangFile
   $script:OrigNoxI18nDir   = $NoxI18nDir
 
-  $script:NoxConfigDir = Join-Path $TestDrive "FrontNox"
-  $script:NoxProjFile  = Join-Path $script:NoxConfigDir "proj.json"
-  $script:NoxLangFile  = Join-Path $script:NoxConfigDir "lang.conf"
-  $script:NoxI18nDir   = Join-Path $RepoRoot "src\i18n"
+  $NoxConfigDir = Join-Path $TestDrive "FrontNox"
+  $NoxProjFile  = Join-Path $NoxConfigDir "proj.json"
+  $NoxLangFile  = Join-Path $NoxConfigDir "lang.conf"
+  $NoxI18nDir   = Join-Path $RepoRoot "src\i18n"
 }
 
 AfterAll {
@@ -226,8 +228,61 @@ Describe "proj" {
       $origDir = (Get-Location).Path
       try {
         Set-Location $projDir
-        $output = (proj run .) *>&1 | Out-String
+        $output = (proj run . -NoTui) *>&1 | Out-String
         $output | Should -Match "npm run dev|echo ok|ok"
+      } finally {
+        Set-Location $origDir
+      }
+    }
+
+    It "shows launch banner with project name, path and command" {
+      $projDir = Join-Path $TestDrive "bannerproj"
+      New-Item -ItemType Directory -Force -Path $projDir | Out-Null
+
+      '{"scripts":{"dev":"echo ok"}}' | Set-Content (Join-Path $projDir "package.json") -Encoding UTF8
+      New-Item -ItemType Directory -Force -Path (Join-Path $projDir "node_modules") | Out-Null
+
+      $origDir = (Get-Location).Path
+      try {
+        Set-Location $projDir
+        $output = (proj run . -NoTui) *>&1 | Out-String
+        $output | Should -Match "bannerproj"
+        $output | Should -Match "npm run dev"
+      } finally {
+        Set-Location $origDir
+      }
+    }
+
+    It "detects dev-server URL in output and shows live message" -Skip:(-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+      $projDir = Join-Path $TestDrive "portproj"
+      New-Item -ItemType Directory -Force -Path $projDir | Out-Null
+
+      '{"scripts":{"dev":"echo Local: http://localhost:5999/"}}' | Set-Content (Join-Path $projDir "package.json") -Encoding UTF8
+      New-Item -ItemType Directory -Force -Path (Join-Path $projDir "node_modules") | Out-Null
+
+      $origDir = (Get-Location).Path
+      try {
+        Set-Location $projDir
+        $output = (proj run . -NoTui) *>&1 | Out-String
+        $output | Should -Match "is live at http://localhost:5999"
+      } finally {
+        Set-Location $origDir
+      }
+    }
+
+    It "detects URL split by ANSI color codes" -Skip:(-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+      $projDir = Join-Path $TestDrive "ansiproj"
+      New-Item -ItemType Directory -Force -Path $projDir | Out-Null
+
+      # The URL is split mid-port by SGR sequences, like Vite's colored output on a PTY
+      '{"scripts":{"dev":"node -e \"console.log(''  Local:   \u001b[36mhttp://localhost:\u001b[1m5999/\u001b[0m'')\""}}' | Set-Content (Join-Path $projDir "package.json") -Encoding UTF8
+      New-Item -ItemType Directory -Force -Path (Join-Path $projDir "node_modules") | Out-Null
+
+      $origDir = (Get-Location).Path
+      try {
+        Set-Location $projDir
+        $output = (proj run . -NoTui) *>&1 | Out-String
+        $output | Should -Match "is live at http://localhost:5999"
       } finally {
         Set-Location $origDir
       }
