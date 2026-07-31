@@ -348,45 +348,83 @@ function proj
                 Write-Host (Get-Msg Banner $projTitle $p "$pm run $cmd") -ForegroundColor Cyan
               }
 
-              # Stream the dev-server output, watching for the bound URL
+              # Shared line handling: echo through, then watch for the bound URL
               # to report the actual port and pin it to the header / tab title
               $script:FrontNoxLastPort = $null
-              try
-              {
-                & $pm run $cmd 2>&1 | ForEach-Object {
-                  $line = "$_"
-                  Write-Host $line
-                  # Strip ANSI escapes: colored output (e.g. Vite on a PTY)
-                  # can split the URL with SGR codes and break the match
-                  $clean = $line -replace "${esc}\[[0-9;?]*[A-Za-z]", ''
-                  if ($clean -match '(https?://(?:localhost|127\.0\.0\.1|\[::1\]):(\d+))')
+              $handleLine = {
+                param($line)
+                Write-Host $line
+                # Strip ANSI escapes: colored output (e.g. Vite on a PTY)
+                # can split the URL with SGR codes and break the match
+                $clean = $line -replace "${esc}\[[0-9;?]*[A-Za-z]", ''
+                if ($clean -match '(https?://(?:localhost|127\.0\.0\.1|\[::1\]):(\d+))')
+                {
+                  $url = $Matches[1]
+                  $port = $Matches[2]
+                  if ($port -ne $script:FrontNoxLastPort)
                   {
-                    $url = $Matches[1]
-                    $port = $Matches[2]
-                    if ($port -ne $script:FrontNoxLastPort)
+                    $script:FrontNoxLastPort = $port
+                    if ($useTui)
                     {
-                      $script:FrontNoxLastPort = $port
-                      if ($useTui)
-                      {
-                        & $drawHeader $url
-                      }
-                      try
-                      {
-                        $Host.UI.RawUI.WindowTitle = "$projTitle :$port"
-                      } catch
-                      {
-                        # No console window (CI, ISE) — the title is cosmetic, skip it
-                      }
-                      Write-Host (Get-Msg Live $projTitle $url) -ForegroundColor Green
+                      & $drawHeader $url
                     }
+                    try
+                    {
+                      $Host.UI.RawUI.WindowTitle = "$projTitle :$port"
+                    } catch
+                    {
+                      # No console window (CI, ISE) — the title is cosmetic, skip it
+                    }
+                    Write-Host (Get-Msg Live $projTitle $url) -ForegroundColor Green
                   }
                 }
-              } finally
+              }
+
+              if ($useTui)
               {
-                if ($useTui)
+                # Render-owned TUI: the child writes to a plain pipe, never to
+                # the screen, so nothing but us can draw or erase the header.
+                # stdout is not a TTY for the child (no clearScreen / cursor
+                # tricks); stdin stays the console, so server shortcuts and
+                # Ctrl+C keep working. FORCE_COLOR keeps the logs colored.
+                $prevForceColor = $env:FORCE_COLOR
+                $env:FORCE_COLOR = '1'
+                $psi = [System.Diagnostics.ProcessStartInfo]::new()
+                $psi.FileName = 'cmd.exe'
+                $psi.Arguments = "/c $pm run $cmd 2>&1"
+                $psi.WorkingDirectory = $p
+                $psi.UseShellExecute = $false
+                $psi.RedirectStandardOutput = $true
+                $proc = [System.Diagnostics.Process]::Start($psi)
+                try
+                {
+                  while (-not $proc.StandardOutput.EndOfStream)
+                  {
+                    $line = $proc.StandardOutput.ReadLine()
+                    if ($null -eq $line)
+                    {
+                      continue
+                    }
+                    # Drop cursor/screen control sequences (keep colors): the
+                    # child must never be able to clear or move anything
+                    $safe = $line -replace "${esc}\[[0-9;?]*[ABCDHJKrsu]", '' -replace "${esc}[78c]", ''
+                    & $handleLine $safe
+                  }
+                } finally
                 {
                   # Give the whole window back to normal scrolling
                   [Console]::Write("${esc}[r")
+                  if (-not $proc.HasExited)
+                  {
+                    taskkill /T /F /PID $proc.Id 2>$null | Out-Null
+                  }
+                  $proc.Dispose()
+                  $env:FORCE_COLOR = $prevForceColor
+                }
+              } else
+              {
+                & $pm run $cmd 2>&1 | ForEach-Object {
+                  & $handleLine "$_"
                 }
               }
             } else
