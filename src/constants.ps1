@@ -4,7 +4,7 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is "AS IS" BASIS.
 
 # --- FrontNox Constants ---
-$NoxVersion     = "1.0.2"
+$NoxVersion     = "1.0.3"
 $NoxBaseDir     = Join-Path $HOME ".config\FrontNox"
 $NoxBinDir      = Join-Path $NoxBaseDir "bin"
 $NoxConfigDir   = $NoxBaseDir
