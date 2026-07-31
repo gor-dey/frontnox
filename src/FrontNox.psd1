@@ -1,4 +1,4 @@
-@{
+﻿@{
   RootModule        = 'FrontNox.psm1'
   ModuleVersion     = '1.0.0'
   GUID              = '6e5d4c3b-2a19-4e8f-a7b6-c5d4e3f2a1b0'
